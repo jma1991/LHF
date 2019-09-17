@@ -1,0 +1,40 @@
+---
+title: "Interactive"
+author: "James Ashmore"
+date: "2019-09-07"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+## Introduction
+
+In this document we are going to deploy an iSEE shiny application in order to allow users to explore the processed data through a web browser (https://jashmore.shinyapps.io/LHF-LPMP)
+
+## Setup
+
+Load required packages:
+
+```{r}
+pacman::p_load(rsconnect)
+```
+
+Update all repositories:
+
+```{r}
+options(repos = BiocManager::repositories())
+```
+
+Copy required files:
+
+```{r}
+file.copy(here::here("data/trajectory.Rds"), here::here("shiny/data.Rds"), overwrite = TRUE)
+```
+
+## Deployment
+
+Deploy the iSEE shiny application to the shinyapps.io server:
+
+```{r}
+rsconnect::deployApp(appDir = "shiny", appName = "LHF-LPMP", appTitle = "LHF", account = "jashmore", launch.browser = FALSE, forceUpdate = TRUE)
+```
