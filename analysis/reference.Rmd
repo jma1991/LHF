@@ -1,0 +1,469 @@
+---
+title: "Reference mapping"
+author: "James Ashmore"
+date: "2019-09-18"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+## Setup
+
+Set chunk options:
+
+```{r knitr}
+knitr::opts_chunk$set(
+  autodep    = TRUE,
+  cache      = TRUE,
+  cache.lazy = FALSE,
+  cache.path = "cache/reference",
+  dev        = "png",
+  error      = FALSE,
+  message    = FALSE,
+  warning    = FALSE
+)
+```
+
+Load required packages:
+
+```{r pacman}
+pacman::p_load(batchelor, ggalluvial, here, pheatmap, readr, scater, scran, scmap, viridis)
+```
+
+Read experiment data:
+
+```{r}
+sce <- read_rds(here("data/trajectory.Rds"))
+```
+
+## Reference
+
+### Installation
+
+Install the MouseGastrulationData package:
+
+```{r, eval = FALSE}
+BiocManager::install("MouseGastrulationData")
+```
+
+Load the MouseGastrulationData package:
+
+```{r}
+pacman::p_load(MouseGastrulationData)
+```
+
+Modify colour palette to include unassigned cells:
+
+```{r}
+EmbryoCelltypeColours <- c(EmbryoCelltypeColours, "unassigned" = "#999999")
+```
+
+### Selection
+
+Select samples from relevant embryonic stages:
+
+```{r}
+sel <- subset(AtlasSampleMetadata, stage %in% c("E7.0", "E7.25", "E7.5", "E7.75"))
+```
+
+Obtain processed counts from the mouse gastrulation dataset:
+
+```{r}
+ref <- EmbryoAtlasData(type = "processed", samples = sel$sample)
+```
+
+### Modification
+
+Change dimension names to those required by the scater package:
+
+```{r}
+reducedDimNames(ref) <- c("PCA", "UMAP")
+```
+
+Compute log-transformed normalized expression values:
+
+```{r}
+ref <- logNormCounts(ref)
+```
+
+Remove cells with no defined cell type:
+
+```{r}
+nan <- is.na(ref$celltype)
+ref <- ref[, !nan]
+```
+
+### Exploration
+
+Inspect PCA coloured by cell type:
+
+```{r, fig.height = 6, fig.width = 10}
+plt <- plotPCA(ref)
+
+plt$data <- cbind(plt$data, as.data.frame(ref@colData))
+
+ggplot(plt$data, aes(X, Y, colour = celltype)) +
+  geom_point(size = 1) +
+  scale_colour_manual(name = "Cell type", values = EmbryoCelltypeColours) +
+  guides(colour = guide_legend(override.aes = list(size = 2))) +
+  facet_wrap(~ stage) +
+  theme_void()
+```
+
+Inspect UMAP coloured by cell type:
+
+```{r, fig.height = 6, fig.width = 10}
+plt <- plotUMAP(ref)
+
+plt$data <- cbind(plt$data, as.data.frame(ref@colData))
+
+ggplot(plt$data, aes(X, Y, colour = celltype)) +
+  geom_point(size = 1) +
+  scale_colour_manual(name = "Cell type", values = EmbryoCelltypeColours) +
+  guides(colour = guide_legend(override.aes = list(size = 2))) +
+  facet_wrap(~ stage) +
+  theme_void()
+```
+
+## Projection
+
+### By cluster
+
+Create feature_symbol column required by scmap package:
+
+```{r}
+rowData(sce)$feature_symbol <- uniquifyFeatureNames(rowData(sce)$gene_id, rowData(sce)$gene_name)
+
+rownames(sce) <- rowData(sce)$feature_symbol
+
+rowData(ref)$feature_symbol <- uniquifyFeatureNames(rowData(ref)$ENSEMBL, rowData(ref)$SYMBOL)
+
+rownames(ref) <- rowData(ref)$feature_symbol
+```
+
+Subset both datasets to common universe of genes:
+
+```{r}
+ids <- intersect(rownames(sce), rownames(ref))
+
+sce <- sce[ids, ]
+
+ref <- ref[ids, ]
+```
+
+Select most informative features from the reference dataset:
+
+```{r}
+ref <- selectFeatures(ref, n_features = 2000)
+```
+
+Create a cluster index based on stage and celltype:
+
+```{r}
+ref$stage_celltype <- paste(ref$stage, ref$celltype, sep = "_")
+
+ref <- indexCluster(ref, cluster_col = "stage_celltype")
+```
+
+Project our dataset to the reference dataset:
+
+```{r}
+fit <- scmapCluster(projection = sce, index_list = list(reference = metadata(ref)$scmap_cluster_index))
+
+sce$scmap_cluster_labs <- fit$scmap_cluster_labs[, "reference"]
+```
+
+Annotate cells using scmap cluster labels:
+
+```{r}
+str <- stringr::str_split(sce$scmap_cluster_labs, "_", simplify = TRUE)
+
+str[str == ""] <- "unassigned"
+
+sce$scmap_stage <- str[, 1]
+
+sce$scmap_celltype <- str[, 2]
+```
+
+Plot the cluster assignment of projected cell types:
+
+```{r}
+dat <- data.frame(cluster = sce$cluster, celltype = sce$scmap_celltype, stage = sce$scmap_stage)
+
+dat <- plyr::count(dat, vars = c("cluster", "celltype", "stage"))
+
+ggplot(dat, aes(y = freq, axis1 = cluster, axis2 = celltype)) +
+  geom_alluvium(aes(fill = stage)) +
+  geom_stratum() +
+  scale_fill_brewer(name = "Stage", palette = "Set1") +
+  geom_text(stat = "stratum", label.strata = TRUE) +
+  scale_x_discrete(limits = c("Cluster", "Cell type"), expand = c(0.05, 0.05)) +
+  theme_minimal()
+```
+
+Plot the cluster assignment of projected cell stages:
+
+```{r}
+dat <- data.frame(cluster = sce$cluster, celltype = sce$scmap_celltype, stage = sce$scmap_stage)
+
+dat <- plyr::count(dat, vars = c("cluster", "celltype", "stage"))
+
+ggplot(dat, aes(y = freq, axis1 = cluster, axis2 = stage)) +
+  geom_alluvium(aes(fill = celltype)) +
+  geom_stratum() +
+  scale_fill_manual(name = "Cell type", values = EmbryoCelltypeColours) +
+  geom_text(stat = "stratum", label.strata = TRUE) +
+  scale_x_discrete(limits = c("Cluster", "Stage"), expand = c(0.05, 0.05)) +
+  theme_minimal()
+```
+
+Inspect the UMAP coordinates coloured by projected cell type:
+
+```{r, fig.height = 6, fig.width = 10}
+plt <- plotUMAP(sce)
+
+plt$data <- cbind(plt$data, as.data.frame(sce@colData))
+
+ggplot(plt$data, aes(X, Y, colour = scmap_celltype)) +
+  geom_point(size = 1) +
+  scale_colour_manual(name = "Cell type", values = EmbryoCelltypeColours) +
+  guides(colour = guide_legend(override.aes = list(size = 2))) +
+  facet_wrap(~ scmap_stage, ncol = 2) +
+  theme_void()
+```
+
+### By cell
+
+Create a cell index:
+
+```{r}
+set.seed(1701)
+
+ref <- indexCell(ref)
+```
+
+Project our dataset to the reference dataset:
+
+```{r}
+num <- round(sqrt(length(unique(ref$stage_celltype))))
+
+fit <- scmapCell(projection = sce, index_list = list(reference = metadata(ref)$scmap_cell_index), w = num)
+
+lab <- apply(fit$reference$cells, 2, function(x) names(which.max(table(ref$stage_celltype[x]))))
+
+sce$scmap_cell_labs <- lab
+```
+
+Annotate cells using scmap cell labels:
+
+```{r}
+str <- stringr::str_split(sce$scmap_cell_labs, "_", simplify = TRUE)
+
+str[str == ""] <- "unassigned"
+
+sce$scmap_stage <- str[, 1]
+
+sce$scmap_celltype <- str[, 2]
+```
+
+Plot the cluster assignment of projected cell types:
+
+```{r}
+dat <- data.frame(cluster = sce$cluster, celltype = sce$scmap_celltype, stage = sce$scmap_stage)
+
+dat <- plyr::count(dat, vars = c("cluster", "celltype", "stage"))
+
+ggplot(dat, aes(y = freq, axis1 = cluster, axis2 = celltype)) +
+  geom_alluvium(aes(fill = stage)) +
+  geom_stratum() +
+  scale_fill_brewer(name = "Stage", palette = "Set1") +
+  geom_text(stat = "stratum", label.strata = TRUE) +
+  scale_x_discrete(limits = c("Cluster", "Cell type"), expand = c(0.05, 0.05)) +
+  theme_minimal()
+```
+
+Plot the cluster assignment of projected cell stages:
+
+```{r}
+dat <- data.frame(cluster = sce$cluster, celltype = sce$scmap_celltype, stage = sce$scmap_stage)
+
+dat <- plyr::count(dat, vars = c("cluster", "celltype", "stage"))
+
+ggplot(dat, aes(y = freq, axis1 = cluster, axis2 = stage)) +
+  geom_alluvium(aes(fill = celltype)) +
+  geom_stratum() +
+  scale_fill_manual(name = "Cell type", values = EmbryoCelltypeColours) +
+  geom_text(stat = "stratum", label.strata = TRUE) +
+  scale_x_discrete(limits = c("Cluster", "Stage"), expand = c(0.05, 0.05)) +
+  theme_minimal()
+```
+
+Inspect the UMAP coordinates coloured by projected cell type:
+
+```{r, fig.height = 6, fig.width = 10}
+plt <- plotUMAP(sce)
+
+plt$data <- cbind(plt$data, as.data.frame(sce@colData))
+
+ggplot(plt$data, aes(X, Y, colour = scmap_celltype)) +
+  geom_point(size = 1) +
+  scale_colour_manual(name = "Cell type", values = EmbryoCelltypeColours) +
+  guides(colour = guide_legend(override.aes = list(size = 2))) +
+  facet_wrap(~ scmap_stage, ncol = 2) +
+  theme_void()
+```
+
+## Neighbors
+
+Clear spike-in information across batches:
+
+```{r}
+ref <- clearSpikes(ref)
+
+sce <- clearSpikes(sce)
+```
+
+Select genes with positive average biological components:
+
+```{r}
+mod <- model.matrix(~ stage + sample, data = colData(ref))
+
+dec <- combineVar(modelGeneVar(ref, design = mod), modelGeneVar(sce))
+
+hvg <- rownames(dec)[dec$bio > 0]
+```
+
+Correct for batch effects using a fast version of the MNN method:
+
+```{r}
+mnn <- fastMNN(ref, sce, pc.input = TRUE, subset.row = hvg)
+
+reducedDimNames(mnn) <- "MNN"
+
+mnn$batch <- ifelse(mnn$batch == 1, "Marioni", "Wilson")
+```
+
+Identify kNN from reference cells:
+
+```{r}
+sbj <- reducedDim(mnn, "MNN")[mnn$batch == "Marioni", ]
+
+qry <- reducedDim(mnn, "MNN")[mnn$batch == "Wilson", ]
+
+num <- round(sqrt(length(unique(ref$celltype))))
+
+knn <- BiocNeighbors::queryKNN(sbj, qry, k = num)
+```
+
+Annotate stage using kNN cells:
+
+```{r}
+mnn$stage <- c(ref$stage, rep(NA, ncol(sce)))
+
+lab <- apply(knn$index, 1, function(x) names(which.max(table(ref$stage[x]))))
+
+mnn$stage[mnn$batch == "Wilson"] <- lab
+
+sce$mnn_stage <- lab
+```
+
+Annotate cell type using kNN cells:
+
+```{r}
+mnn$celltype <- c(ref$celltype, rep(NA, ncol(sce)))
+
+lab <- apply(knn$index, 1, function(x) names(which.max(table(ref$celltype[x]))))
+
+mnn$celltype[mnn$batch == "Wilson"] <- lab
+
+sce$mnn_celltype <- lab
+```
+
+Plot the cluster assignment of projected cell types:
+
+```{r}
+dat <- data.frame(cluster = sce$cluster, celltype = sce$mnn_celltype, stage = sce$mnn_stage)
+
+dat <- plyr::count(dat, vars = c("cluster", "celltype", "stage"))
+
+ggplot(dat, aes(y = freq, axis1 = cluster, axis2 = celltype)) +
+  geom_alluvium(aes(fill = stage)) +
+  geom_stratum() +
+  scale_fill_brewer(name = "Stage", palette = "Set1") +
+  geom_text(stat = "stratum", label.strata = TRUE) +
+  scale_x_discrete(limits = c("Cluster", "Cell type"), expand = c(0.05, 0.05)) +
+  theme_minimal()
+```
+
+Plot the cluster assignment of projected cell stages:
+
+```{r}
+dat <- data.frame(cluster = sce$cluster, celltype = sce$mnn_celltype, stage = sce$mnn_stage)
+
+dat <- plyr::count(dat, vars = c("cluster", "celltype", "stage"))
+
+ggplot(dat, aes(y = freq, axis1 = cluster, axis2 = stage)) +
+  geom_alluvium(aes(fill = celltype)) +
+  geom_stratum() +
+  scale_fill_manual(name = "Cell type", values = EmbryoCelltypeColours) +
+  geom_text(stat = "stratum", label.strata = TRUE) +
+  scale_x_discrete(limits = c("Cluster", "Stage"), expand = c(0.05, 0.05)) +
+  theme_minimal()
+```
+
+Inspect the UMAP coordinates coloured by projected cell type:
+
+```{r, fig.height = 6, fig.width = 10}
+plt <- plotUMAP(sce)
+
+plt$data <- cbind(plt$data, as.data.frame(sce@colData))
+
+ggplot(plt$data, aes(X, Y, colour = mnn_celltype)) +
+  geom_point(size = 1) +
+  scale_colour_manual(name = "Cell type", values = EmbryoCelltypeColours) +
+  guides(colour = guide_legend(override.aes = list(size = 2))) +
+  facet_wrap(~ mnn_stage, ncol = 2) +
+  theme_void()
+```
+
+Perform UMAP on the PCA data from the combined dataset:
+
+```{r}
+set.seed(1701)
+
+mnn <- runUMAP(mnn, dimred = "MNN")
+```
+
+Inspect the UMAP coordinates coloured by projected cell type:
+
+```{r, fig.height = 6, fig.width = 10}
+plt <- plotUMAP(mnn)
+
+plt$data <- cbind(plt$data, as.data.frame(mnn@colData))
+
+ggplot(subset(plt$data, batch == "Marioni"), aes(X, Y, colour = celltype)) +
+  geom_point() +
+  scale_colour_manual(name = "Cell type", values = EmbryoCelltypeColours) +
+  geom_point(data = subset(plt$data, batch == "Wilson"), aes(X, Y), colour = "black", shape = 1) +
+  guides(colour = guide_legend(override.aes = list(size = 2))) +
+  facet_wrap(~ stage, ncol = 2) +
+  theme_void()
+```
+
+## Summary
+
+### Output
+
+Write combined dataset:
+
+```{r}
+write_rds(mnn, here("data/reference.Rds"))
+```
+
+### Session
+
+Print session information:
+
+```{r}
+devtools::session_info()
+```
