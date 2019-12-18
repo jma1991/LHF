@@ -498,7 +498,7 @@ This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis
 </div>
 <div id="strongRMarkdownfilestronguncommittedchanges" class="panel-collapse collapse">
 <div class="panel-body">
-<p>The R Markdown is untracked by Git. To know which version of the R Markdown file created these results, you’ll want to first commit it to the Git repo. If you’re still working on the analysis, you can ignore this warning. When you’re finished, you can run <code>wflow_publish</code> to commit the R Markdown file and build the HTML.</p>
+<p>The R Markdown file has unstaged changes. To know which version of the R Markdown file created these results, you’ll want to first commit it to the Git repo. If you’re still working on the analysis, you can ignore this warning. When you’re finished, you can run <code>wflow_publish</code> to commit the R Markdown file and build the HTML.</p>
 </div>
 </div>
 </div>
@@ -565,10 +565,10 @@ This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomjma1991LHFtree48f6745fae0b3cabb7acd160ad9f10f62ea87d72targetblank48f6745a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/jma1991/LHF/tree/48f6745fae0b3cabb7acd160ad9f10f62ea87d72" target="_blank">48f6745</a> </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomjma1991LHFtreef20ba0249daea9316ccf31c6f5a4602f9d0985eftargetblankf20ba02a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/jma1991/LHF/tree/f20ba0249daea9316ccf31c6f5a4602f9d0985ef" target="_blank">f20ba02</a> </a>
 </p>
 </div>
-<div id="strongRepositoryversionstrongahrefhttpsgithubcomjma1991LHFtree48f6745fae0b3cabb7acd160ad9f10f62ea87d72targetblank48f6745a" class="panel-collapse collapse">
+<div id="strongRepositoryversionstrongahrefhttpsgithubcomjma1991LHFtreef20ba0249daea9316ccf31c6f5a4602f9d0985eftargetblankf20ba02a" class="panel-collapse collapse">
 <div class="panel-body">
 <p>
 Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility. The version displayed above was the version of the Git repository at the time these results were generated. <br><br> Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
@@ -584,15 +584,13 @@ Ignored files:
 
 Untracked files:
     Untracked:  LICENSE
-    Untracked:  analysis/04-analysis.Rmd
-    Untracked:  analysis/05-analysis.Rmd
-    Untracked:  analysis/06-analysis.Rmd
     Untracked:  markers.csv
 
 Unstaged changes:
     Modified:   .gitignore
     Modified:   _workflowr.yml
-    Modified:   analysis/_site.yml
+    Modified:   analysis/05-analysis.Rmd
+    Modified:   analysis/06-analysis.Rmd
 
 </code></pre>
 <p>
@@ -605,9 +603,69 @@ Note that any generated files, e.g. HTML, png, CSS, etc., are not included in t
 <hr>
 </div>
 <div id="versions" class="tab-pane fade">
+
 <p>
-There are no past versions. Publish this analysis with <code>wflow_publish()</code> to start tracking its development.
+These are the previous versions of the R Markdown and HTML files. If you’ve configured a remote Git repository (see <code>?wflow_git_remote</code>), click on the hyperlinks in the table below to view them.
 </p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/jma1991/LHF/blob/0af9fb4905a5cdce9c653cda47dc201fd1e66a75/analysis/06-analysis.Rmd" target="_blank">0af9fb4</a>
+</td>
+<td>
+James Ashmore
+</td>
+<td>
+2019-12-18
+</td>
+<td>
+wflow_publish(files = c(&quot;analysis/_site.yml“,”analysis/index.Rmd“,”analysis/04-analysis.Rmd“,”analysis/05-analysis.Rmd“,”analysis/06-analysis.Rmd&quot;), dry_run = TRUE)
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/jma1991/LHF/f20ba0249daea9316ccf31c6f5a4602f9d0985ef/docs/06-analysis.html" target="_blank">f20ba02</a>
+</td>
+<td>
+James Ashmore
+</td>
+<td>
+2019-12-18
+</td>
+<td>
+Build site.
+</td>
+</tr>
+</tbody>
+</table>
+</div>
 <hr>
 </div>
 </div>
@@ -820,6 +878,13 @@ sig &lt;- Filter(length, sig)</code></pre>
 <h4>Cluster 5</h4>
 <p><img src="figure/06-analysis.Rmd/unnamed-chunk-14-5.png" width="960" style="display: block; margin: auto;" /></p>
 </div>
+</div>
+</div>
+<div id="summary" class="section level2">
+<h2>Summary</h2>
+<div id="output" class="section level3">
+<h3>Output</h3>
+<pre class="r"><code>saveRDS(mnn, file = here(&quot;data/06-analysis.rds&quot;))</code></pre>
 </div>
 </div>
 
