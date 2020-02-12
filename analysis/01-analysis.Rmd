@@ -1,0 +1,213 @@
+---
+title: "Analysis 1"
+author: "James Ashmore"
+date: "2019-10-23"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+## Setup
+
+Set knitr chunk options:
+
+```{r knitr}
+knitr::opts_chunk$set(
+  autodep    = TRUE,
+  cache      = TRUE,
+  cache.path = "cache/01-analysis.Rmd/",
+  dev        = "png",
+  error      = FALSE,
+  message    = FALSE,
+  warning    = FALSE
+)
+```
+
+Load required analysis packages:
+
+```{r}
+pacman::p_load(scater, scran, SingleCellExperiment, uwot, Rtsne)
+```
+
+Import experiment data:
+
+```{r}
+sce <- readr::read_rds(here::here("data/annotation.rds"))
+```
+
+## Exploration
+
+Ectoderm, paraxial and lateral mesoderm markers:
+
+```{r}
+ids <- data.frame(
+  group = factor(c(1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6)),
+  row.names = c("Vim", "Twist2", "Twist1", "Snai1", "Runx1", "Tal1", "Etv2", "Kdr", "Hoxa11", "Hoxa10", "Aldh1a2", "Pitx1", "Foxf1", "Hand1", "Msgn1", "Pcdh19", "Tbx6", "Dll3", "Dll1", "Cldn7", "Tfap2c", "Nkx1-2", "Cdh1", "Epcam")
+)
+```
+
+Plot scaled expression values of markers:
+
+```{r fig.width = 8}
+mat <- logcounts(sce)
+
+mat <- mat[rownames(ids), ]
+
+mat <- mat[order(ids$group), ]
+
+mat <- mat[, order(sce$cluster)]
+
+mat <- mat - rowMeans(mat)
+
+val <- max(abs(mat))
+
+lim <- c(-val, val)
+
+mat[mat < lim[1]] <- lim[1]
+
+mat[mat > lim[2]] <- lim[2]
+
+pal <- colorRampPalette(rev(RColorBrewer::brewer.pal(5, name = "RdYlBu")))
+
+col <- pal(100)
+
+brk <- seq(lim[1], lim[2], length.out = 101)
+
+ann <- list(
+  row = data.frame(Markers = ids$group, row.names = rownames(ids)),
+  col = data.frame(Cluster = sce$cluster, row.names = colnames(sce))
+)
+
+pheatmap::pheatmap(
+  mat, 
+  color = col, 
+  breaks = brk, 
+  scale = "none", 
+  cluster_rows = FALSE, 
+  cluster_cols = FALSE, 
+  annotation_row = ann$row, 
+  annotation_col = ann$col,
+  show_colnames = TRUE
+)
+```
+
+Streak markers:
+
+```{r}
+ids <- data.frame(
+  group = factor(c(1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8)),
+  row.names = c("Hoxa5", "Hoxa11", "Hoxa10", "Hoxa9", "Hoxa7", "Sox2", "Eomes", "Nanog", "Sp6", "Wnt8a", "Wnt3a", "Fgf10", "Fgf8", "Snai1", "Vim", "Etv2", "Kdr", "Foxf1", "Hand1", "Tbx6", "Dll3", "Cdh1", "Epcam")
+)
+```
+
+Plot scaled expression values of markers:
+
+```{r fig.width = 8}
+mat <- logcounts(sce)
+
+mat <- mat[rownames(ids), ]
+
+mat <- mat[order(ids$group), ]
+
+mat <- mat[, order(sce$cluster)]
+
+mat <- mat - rowMeans(mat)
+
+val <- max(abs(mat))
+
+lim <- c(-val, val)
+
+mat[mat < lim[1]] <- lim[1]
+
+mat[mat > lim[2]] <- lim[2]
+
+pal <- colorRampPalette(rev(RColorBrewer::brewer.pal(5, name = "RdYlBu")))
+
+col <- pal(100)
+
+brk <- seq(lim[1], lim[2], length.out = 101)
+
+ann <- list(
+  row = data.frame(Markers = ids$group, row.names = rownames(ids)),
+  col = data.frame(Cluster = sce$cluster, row.names = colnames(sce))
+)
+
+pheatmap::pheatmap(
+  mat, 
+  color = col, 
+  breaks = brk, 
+  scale = "none", 
+  cluster_rows = FALSE, 
+  cluster_cols = FALSE, 
+  annotation_row = ann$row, 
+  annotation_col = ann$col,
+  show_colnames = FALSE
+)
+```
+
+Manually annotate the clusters using information from Valerie Wilson:
+
+```{r}
+tbl <- read.csv(here::here("data/cell_annotation.csv"))
+
+sce$germ_layer <- tbl$germ_layer[match(sce$Sample, tbl$cell_id)]
+```
+
+Ectoderm, paraxial and lateral mesoderm and streak markers:
+
+```{r}
+ids <- c("Vim", "Twist2", "Twist1", "Snai1", "Runx1", "Tal1", "Etv2", "Kdr", "Hoxa11", "Hoxa10", "Aldh1a2", "Pitx1", "Foxf1", "Hand1", "Msgn1", "Pcdh19", "Tbx6", "Dll3", "Dll1", "Cldn7", "Tfap2c", "Nkx1-2", "Cdh1", "Epcam", "Hoxa5", "Hoxa9", "Hoxa7", "Sox2", "Eomes", "Nanog", "Sp6", "Wnt8a", "Wnt3a", "Fgf10", "Fgf8")
+```
+
+Plot scaled expression values of markers:
+
+```{r fig.width = 8}
+mat <- logcounts(sce)
+
+mat <- mat[ids, ]
+
+mat <- mat[, order(sce$germ_layer)]
+
+mat <- mat - rowMeans(mat)
+
+val <- max(abs(mat))
+
+lim <- c(-val, val)
+
+mat[mat < lim[1]] <- lim[1]
+
+mat[mat > lim[2]] <- lim[2]
+
+pal <- colorRampPalette(rev(RColorBrewer::brewer.pal(5, name = "RdYlBu")))
+
+col <- pal(100)
+
+brk <- seq(lim[1], lim[2], length.out = 101)
+
+ann <- list(
+  col = data.frame(
+    Cluster = sce$cluster,
+    Layer = sce$germ_layer,
+    row.names = colnames(sce)
+  )
+)
+
+pheatmap::pheatmap(
+  mat, 
+  color = col, 
+  breaks = brk, 
+  scale = "none", 
+  cluster_rows = TRUE, 
+  cluster_cols = FALSE, 
+  annotation_col = ann$col,
+  show_colnames = FALSE
+)
+```
+
+## Summary
+
+Save experiment object to disk:
+
+```{r}
+saveRDS(sce, here::here("data/01-analysis.rds"))
+```

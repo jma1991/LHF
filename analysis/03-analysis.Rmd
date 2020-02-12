@@ -1,5 +1,5 @@
 ---
-title: "Analysis 4"
+title: "Analysis 3"
 author: "James Ashmore"
 date: "2019-10-23"
 output: workflowr::wflow_html
@@ -15,7 +15,8 @@ Set knitr chunk options:
 knitr::opts_chunk$set(
   autodep    = TRUE,
   cache      = TRUE,
-  cache.path = "cache/04-analysis.Rmd/",
+  cache.path = "cache/03-analysis.Rmd/",
+  cache.lazy = FALSE,
   dev        = "png",
   error      = FALSE,
   message    = FALSE,
@@ -113,35 +114,6 @@ ggplot(plt$data, aes(X, Y)) +
   theme(aspect.ratio = 1)
 ```
 
-```{r}
-snn <- buildSNNGraph(mnn, assay.type = "reconstructed", use.dimred = "MNN")
-
-cls <- igraph::cluster_walktrap(snn)$membership
-
-mnn$cluster_full <- factor(cls)
-```
-
-```{r, fig.width = 10, fig.height = 6}
-plt <- plotUMAP(mnn)
-
-plt$data$fill_by <- mnn$cluster_full
-
-plt$data$colour_by <- mnn$batch
-
-plt$data$facet_by <- mnn$stage
-
-pch <- c("Marioni" = "transparent", "Wilson" = "#000000")
-
-ggplot(plt$data, aes(X, Y)) + 
-  geom_point(data = plt$data[, 1:4], mapping = aes(X, Y), colour = "grey") + 
-  geom_point(aes(fill = fill_by, colour = colour_by), shape = 21) + 
-  facet_wrap(~ facet_by, scales = "fixed") + 
-  scale_fill_brewer(name = "Cluster", palette = "Set1") + 
-  scale_colour_manual(name = "Batch", values = pch, limits = "Wilson") + 
-  theme_void() +
-  theme(aspect.ratio = 1)
-```
-
 ## Sub-clustering
 
 ```{r}
@@ -150,7 +122,7 @@ sclust <- function(obj) {
   ref <- mnn[, mnn$batch == "Marioni"]
   
   sce <- mnn[, mnn$batch == "Wilson"]
-  
+
   dec <- combineVar(modelGeneVar(ref), modelGeneVar(sce, block = sce$phase))
   
   hvg <- rownames(dec)[dec$bio > 0]
@@ -167,7 +139,7 @@ sclust <- function(obj) {
 ```
 
 ```{r}
-tbl <- table(mnn$cluster_full)
+tbl <- table(mnn$neighbor)
 
 lvl <- names(tbl)
 
@@ -177,7 +149,7 @@ lvl <- lvl[tbl > 1]
 ```{r}
 mnn <- lapply(lvl, function(x) {
   
-  obj <- mnn[, mnn$cluster_full == x]
+  obj <- mnn[, mnn$neighbor == x]
   
   obj <- sclust(obj)
   
@@ -217,7 +189,7 @@ for (n in names(sig)) {
   
   plt <- plotUMAP(obj, colour_by = "cluster_walktrap", shape_by = "batch")
   
-  cat("#### Cluster", n, "\n")
+  cat("#### ", n, "\n")
 
   print(plt)
 
@@ -237,7 +209,7 @@ for (n in names(sig)) {
   
   ids <- sig[[n]]
 
-  cat("#### Cluster", n, "\n")
+  cat("#### ", n, "\n")
 
   plotHeatmap(obj, ids, exprs_values = "reconstructed", center = TRUE, symmetric = TRUE, colour_columns_by = "batch", order_columns_by = "cluster_walktrap", show_colnames = FALSE, cluster_rows = ifelse(length(ids) >= 2, TRUE, FALSE))
 
@@ -251,5 +223,5 @@ for (n in names(sig)) {
 ### Output
 
 ```{r}
-saveRDS(mnn, file = here("data/04-analysis.rds"))
+saveRDS(mnn, file = here("data/03-analysis.rds"))
 ```
