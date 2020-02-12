@@ -13,7 +13,7 @@
 
 <meta name="date" content="2019-10-23" />
 
-<title>Analysis 4</title>
+<title>Analysis 1</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -441,7 +441,7 @@ div.section {
 
 
 
-<h1 class="title toc-ignore">Analysis 4</h1>
+<h1 class="title toc-ignore">Analysis 1</h1>
 <h4 class="author">James Ashmore</h4>
 <h4 class="date">2019-10-23</h4>
 
@@ -492,7 +492,7 @@ This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis
 </div>
 <div id="strongRMarkdownfilestronguncommittedchanges" class="panel-collapse collapse">
 <div class="panel-body">
-<p>The R Markdown file has unstaged changes. To know which version of the R Markdown file created these results, you’ll want to first commit it to the Git repo. If you’re still working on the analysis, you can ignore this warning. When you’re finished, you can run <code>wflow_publish</code> to commit the R Markdown file and build the HTML.</p>
+<p>The R Markdown is untracked by Git. To know which version of the R Markdown file created these results, you’ll want to first commit it to the Git repo. If you’re still working on the analysis, you can ignore this warning. When you’re finished, you can run <code>wflow_publish</code> to commit the R Markdown file and build the HTML.</p>
 </div>
 </div>
 </div>
@@ -602,69 +602,9 @@ Note that any generated files, e.g. HTML, png, CSS, etc., are not included in t
 <hr>
 </div>
 <div id="versions" class="tab-pane fade">
-
 <p>
-These are the previous versions of the R Markdown and HTML files. If you’ve configured a remote Git repository (see <code>?wflow_git_remote</code>), click on the hyperlinks in the table below to view them.
+There are no past versions. Publish this analysis with <code>wflow_publish()</code> to start tracking its development.
 </p>
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-File
-</th>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-<th>
-Message
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-Rmd
-</td>
-<td>
-<a href="https://github.com/jma1991/LHF/blob/0af9fb4905a5cdce9c653cda47dc201fd1e66a75/analysis/04-analysis.Rmd" target="_blank">0af9fb4</a>
-</td>
-<td>
-James Ashmore
-</td>
-<td>
-2019-12-18
-</td>
-<td>
-wflow_publish(files = c(&quot;analysis/_site.yml“,”analysis/index.Rmd“,”analysis/04-analysis.Rmd“,”analysis/05-analysis.Rmd“,”analysis/06-analysis.Rmd&quot;), dry_run = TRUE)
-</td>
-</tr>
-<tr>
-<td>
-html
-</td>
-<td>
-<a href="https://rawcdn.githack.com/jma1991/LHF/f20ba0249daea9316ccf31c6f5a4602f9d0985ef/docs/04-analysis.html" target="_blank">f20ba02</a>
-</td>
-<td>
-James Ashmore
-</td>
-<td>
-2019-12-18
-</td>
-<td>
-Build site.
-</td>
-</tr>
-</tbody>
-</table>
-</div>
 <hr>
 </div>
 </div>
@@ -675,250 +615,166 @@ Build site.
 <pre class="r"><code>knitr::opts_chunk$set(
   autodep    = TRUE,
   cache      = TRUE,
-  cache.path = &quot;cache/04-analysis.Rmd/&quot;,
+  cache.path = &quot;cache/01-analysis.Rmd/&quot;,
   dev        = &quot;png&quot;,
   error      = FALSE,
   message    = FALSE,
   warning    = FALSE
 )</code></pre>
-</div>
-<div id="packages" class="section level2">
-<h2>Packages</h2>
 <p>Load required analysis packages:</p>
-<pre class="r"><code>pacman::p_load(batchelor, gam, here, readr, scater, scran, slingshot, RColorBrewer, pheatmap, igraph, EnsDb.Mmusculus.v79)</code></pre>
+<pre class="r"><code>pacman::p_load(scater, scran, SingleCellExperiment, uwot, Rtsne)</code></pre>
+<p>Import experiment data:</p>
+<pre class="r"><code>sce &lt;- readr::read_rds(here::here(&quot;data/annotation.rds&quot;))</code></pre>
 </div>
-<div id="setup-1" class="section level2">
-<h2>Setup</h2>
-<p>Load the MouseGastrulationData package:</p>
-<pre class="r"><code>pacman::p_load(MouseGastrulationData)</code></pre>
-<p>Modify colour palette to include unassigned and unknown cells:</p>
-<pre class="r"><code>EmbryoCelltypeColours &lt;- c(EmbryoCelltypeColours, unassigned = &quot;#999999&quot;, unknown = &quot;#999999&quot;)</code></pre>
-</div>
-<div id="import" class="section level2">
-<h2>Import</h2>
-<p>Load the merged dataset:</p>
-<pre class="r"><code>mnn &lt;- read_rds(here(&quot;data/02-analysis.rds&quot;))</code></pre>
-<p>Annotate gene identifiers:</p>
-<pre class="r"><code>rowData(mnn)$ENSEMBL &lt;- rownames(mnn)
+<div id="exploration" class="section level2">
+<h2>Exploration</h2>
+<p>Ectoderm, paraxial and lateral mesoderm markers:</p>
+<pre class="r"><code>ids &lt;- data.frame(
+  group = factor(c(1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6)),
+  row.names = c(&quot;Vim&quot;, &quot;Twist2&quot;, &quot;Twist1&quot;, &quot;Snai1&quot;, &quot;Runx1&quot;, &quot;Tal1&quot;, &quot;Etv2&quot;, &quot;Kdr&quot;, &quot;Hoxa11&quot;, &quot;Hoxa10&quot;, &quot;Aldh1a2&quot;, &quot;Pitx1&quot;, &quot;Foxf1&quot;, &quot;Hand1&quot;, &quot;Msgn1&quot;, &quot;Pcdh19&quot;, &quot;Tbx6&quot;, &quot;Dll3&quot;, &quot;Dll1&quot;, &quot;Cldn7&quot;, &quot;Tfap2c&quot;, &quot;Nkx1-2&quot;, &quot;Cdh1&quot;, &quot;Epcam&quot;)
+)</code></pre>
+<p>Plot scaled expression values of markers:</p>
+<pre class="r"><code>mat &lt;- logcounts(sce)
 
-rowData(mnn)$SYMBOL &lt;- mapIds(EnsDb.Mmusculus.v79, keys = rownames(mnn), column = &quot;SYMBOL&quot;, keytype = &quot;GENEID&quot;)
+mat &lt;- mat[rownames(ids), ]
 
-rownames(mnn) &lt;- uniquifyFeatureNames(rowData(mnn)$ENSEMBL, rowData(mnn)$SYMBOL)</code></pre>
-<p>Plot UMAP showing neighbour and batch annotation:</p>
-<pre class="r"><code>plt &lt;- plotUMAP(mnn)
+mat &lt;- mat[order(ids$group), ]
 
-plt$data$fill_by &lt;- mnn$neighbor
+mat &lt;- mat[, order(sce$cluster)]
 
-plt$data$colour_by &lt;- mnn$batch
+mat &lt;- mat - rowMeans(mat)
 
-plt$data$facet_by &lt;- mnn$stage
+val &lt;- max(abs(mat))
 
-col &lt;- EmbryoCelltypeColours
+lim &lt;- c(-val, val)
 
-pch &lt;- c(&quot;Marioni&quot; = &quot;transparent&quot;, &quot;Wilson&quot; = &quot;#000000&quot;)
+mat[mat &lt; lim[1]] &lt;- lim[1]
 
-ggplot(plt$data, aes(X, Y)) +
-  geom_point(aes(fill = fill_by, colour = colour_by), shape = 21) + 
-  facet_wrap(~ facet_by, scales = &quot;fixed&quot;) + 
-  scale_fill_manual(name = &quot;Cell type&quot;, values = col) + 
-  scale_colour_manual(name = &quot;Batch&quot;, values = pch, limits = &quot;Wilson&quot;) + 
-  theme_void() +
-  theme(aspect.ratio = 1)</code></pre>
-<p><img src="figure/04-analysis.Rmd/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>Plot UMAP showing germ layer and batch annotation:</p>
-<pre class="r"><code>plt &lt;- plotUMAP(mnn)
+mat[mat &gt; lim[2]] &lt;- lim[2]
 
-plt$data$fill_by &lt;- mnn$germ
+pal &lt;- colorRampPalette(rev(RColorBrewer::brewer.pal(5, name = &quot;RdYlBu&quot;)))
 
-plt$data$colour_by &lt;- mnn$batch
+col &lt;- pal(100)
 
-plt$data$facet_by &lt;- mnn$stage
+brk &lt;- seq(lim[1], lim[2], length.out = 101)
 
-col &lt;- c(RColorBrewer::brewer.pal(5, name = &quot;Set1&quot;), &quot;#d9d9d9&quot;)
+ann &lt;- list(
+  row = data.frame(Markers = ids$group, row.names = rownames(ids)),
+  col = data.frame(Cluster = sce$cluster, row.names = colnames(sce))
+)
 
-names(col) &lt;- c(&quot;ectoderm&quot;, &quot;ps_ectoderm&quot;, &quot;LPM&quot;, &quot;PXM&quot;, &quot;low_quality&quot;, &quot;NA&quot;)
+pheatmap::pheatmap(
+  mat, 
+  color = col, 
+  breaks = brk, 
+  scale = &quot;none&quot;, 
+  cluster_rows = FALSE, 
+  cluster_cols = FALSE, 
+  annotation_row = ann$row, 
+  annotation_col = ann$col,
+  show_colnames = TRUE
+)</code></pre>
+<p><img src="figure/01-analysis.Rmd/unnamed-chunk-4-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p>Streak markers:</p>
+<pre class="r"><code>ids &lt;- data.frame(
+  group = factor(c(1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8)),
+  row.names = c(&quot;Hoxa5&quot;, &quot;Hoxa11&quot;, &quot;Hoxa10&quot;, &quot;Hoxa9&quot;, &quot;Hoxa7&quot;, &quot;Sox2&quot;, &quot;Eomes&quot;, &quot;Nanog&quot;, &quot;Sp6&quot;, &quot;Wnt8a&quot;, &quot;Wnt3a&quot;, &quot;Fgf10&quot;, &quot;Fgf8&quot;, &quot;Snai1&quot;, &quot;Vim&quot;, &quot;Etv2&quot;, &quot;Kdr&quot;, &quot;Foxf1&quot;, &quot;Hand1&quot;, &quot;Tbx6&quot;, &quot;Dll3&quot;, &quot;Cdh1&quot;, &quot;Epcam&quot;)
+)</code></pre>
+<p>Plot scaled expression values of markers:</p>
+<pre class="r"><code>mat &lt;- logcounts(sce)
 
-pch &lt;- c(&quot;Marioni&quot; = &quot;transparent&quot;, &quot;Wilson&quot; = &quot;#000000&quot;)
+mat &lt;- mat[rownames(ids), ]
 
-ggplot(plt$data, aes(X, Y)) +
-  geom_point(aes(fill = fill_by, colour = colour_by), shape = 21) + 
-  facet_wrap(~ facet_by, scales = &quot;fixed&quot;) + 
-  scale_fill_manual(name = &quot;Cell type&quot;, values = col) + 
-  scale_colour_manual(name = &quot;Batch&quot;, values = pch, limits = &quot;Wilson&quot;) + 
-  theme_void() +
-  theme(aspect.ratio = 1)</code></pre>
-<p><img src="figure/04-analysis.Rmd/unnamed-chunk-7-1.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>snn &lt;- buildSNNGraph(mnn, assay.type = &quot;reconstructed&quot;, use.dimred = &quot;MNN&quot;)
+mat &lt;- mat[order(ids$group), ]
 
-cls &lt;- igraph::cluster_walktrap(snn)$membership
+mat &lt;- mat[, order(sce$cluster)]
 
-mnn$cluster_full &lt;- factor(cls)</code></pre>
-<pre class="r"><code>plt &lt;- plotUMAP(mnn)
+mat &lt;- mat - rowMeans(mat)
 
-plt$data$fill_by &lt;- mnn$cluster_full
+val &lt;- max(abs(mat))
 
-plt$data$colour_by &lt;- mnn$batch
+lim &lt;- c(-val, val)
 
-plt$data$facet_by &lt;- mnn$stage
+mat[mat &lt; lim[1]] &lt;- lim[1]
 
-pch &lt;- c(&quot;Marioni&quot; = &quot;transparent&quot;, &quot;Wilson&quot; = &quot;#000000&quot;)
+mat[mat &gt; lim[2]] &lt;- lim[2]
 
-ggplot(plt$data, aes(X, Y)) + 
-  geom_point(data = plt$data[, 1:4], mapping = aes(X, Y), colour = &quot;grey&quot;) + 
-  geom_point(aes(fill = fill_by, colour = colour_by), shape = 21) + 
-  facet_wrap(~ facet_by, scales = &quot;fixed&quot;) + 
-  scale_fill_brewer(name = &quot;Cluster&quot;, palette = &quot;Set1&quot;) + 
-  scale_colour_manual(name = &quot;Batch&quot;, values = pch, limits = &quot;Wilson&quot;) + 
-  theme_void() +
-  theme(aspect.ratio = 1)</code></pre>
-<p><img src="figure/04-analysis.Rmd/unnamed-chunk-9-1.png" width="960" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-9-1">
-Past versions of unnamed-chunk-9-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-9-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/jma1991/LHF/blob/f20ba0249daea9316ccf31c6f5a4602f9d0985ef/docs/figure/04-analysis.Rmd/unnamed-chunk-9-1.png" target="_blank">f20ba02</a>
-</td>
-<td>
-James Ashmore
-</td>
-<td>
-2019-12-18
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-</div>
-<div id="sub-clustering" class="section level2">
-<h2>Sub-clustering</h2>
-<pre class="r"><code>sclust &lt;- function(obj) {
-  
-  ref &lt;- mnn[, mnn$batch == &quot;Marioni&quot;]
-  
-  sce &lt;- mnn[, mnn$batch == &quot;Wilson&quot;]
-  
-  dec &lt;- combineVar(modelGeneVar(ref), modelGeneVar(sce, block = sce$phase))
-  
-  hvg &lt;- rownames(dec)[dec$bio &gt; 0]
-  
-  snn &lt;- buildSNNGraph(obj, assay.type = &quot;reconstructed&quot;, use.dimred = &quot;MNN&quot;, subset.row = hvg)
-  
-  cls &lt;- igraph::cluster_walktrap(snn)$membership
-  
-  obj$cluster_walktrap &lt;- factor(cls)
-  
-  return(obj)
-  
-}</code></pre>
-<pre class="r"><code>tbl &lt;- table(mnn$cluster_full)
+pal &lt;- colorRampPalette(rev(RColorBrewer::brewer.pal(5, name = &quot;RdYlBu&quot;)))
 
-lvl &lt;- names(tbl)
+col &lt;- pal(100)
 
-lvl &lt;- lvl[tbl &gt; 1]</code></pre>
-<pre class="r"><code>mnn &lt;- lapply(lvl, function(x) {
-  
-  obj &lt;- mnn[, mnn$cluster_full == x]
-  
-  obj &lt;- sclust(obj)
-  
-  obj
+brk &lt;- seq(lim[1], lim[2], length.out = 101)
 
-})
+ann &lt;- list(
+  row = data.frame(Markers = ids$group, row.names = rownames(ids)),
+  col = data.frame(Cluster = sce$cluster, row.names = colnames(sce))
+)
 
-names(mnn) &lt;- lvl</code></pre>
-<pre class="r"><code>sig &lt;- lapply(mnn, function(x) {
-  
-  m &lt;- findMarkers(x, x$cluster_walktrap, block = x$batch, assay.type = &quot;logcounts&quot;)
-  
-  m &lt;- lapply(m, subset, FDR &lt; 0.1)
-  
-  m &lt;- lapply(m, head, n = 25)
-  
-  m &lt;- lapply(m, rownames)
-  
-  m &lt;- unique(sort(unlist(m)))
+pheatmap::pheatmap(
+  mat, 
+  color = col, 
+  breaks = brk, 
+  scale = &quot;none&quot;, 
+  cluster_rows = FALSE, 
+  cluster_cols = FALSE, 
+  annotation_row = ann$row, 
+  annotation_col = ann$col,
+  show_colnames = FALSE
+)</code></pre>
+<p><img src="figure/01-analysis.Rmd/unnamed-chunk-6-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p>Manually annotate the clusters using information from Valerie Wilson:</p>
+<pre class="r"><code>tbl &lt;- read.csv(here::here(&quot;data/cell_annotation.csv&quot;))
 
-})
+sce$germ_layer &lt;- tbl$germ_layer[match(sce$Sample, tbl$cell_id)]</code></pre>
+<p>Ectoderm, paraxial and lateral mesoderm and streak markers:</p>
+<pre class="r"><code>ids &lt;- c(&quot;Vim&quot;, &quot;Twist2&quot;, &quot;Twist1&quot;, &quot;Snai1&quot;, &quot;Runx1&quot;, &quot;Tal1&quot;, &quot;Etv2&quot;, &quot;Kdr&quot;, &quot;Hoxa11&quot;, &quot;Hoxa10&quot;, &quot;Aldh1a2&quot;, &quot;Pitx1&quot;, &quot;Foxf1&quot;, &quot;Hand1&quot;, &quot;Msgn1&quot;, &quot;Pcdh19&quot;, &quot;Tbx6&quot;, &quot;Dll3&quot;, &quot;Dll1&quot;, &quot;Cldn7&quot;, &quot;Tfap2c&quot;, &quot;Nkx1-2&quot;, &quot;Cdh1&quot;, &quot;Epcam&quot;, &quot;Hoxa5&quot;, &quot;Hoxa9&quot;, &quot;Hoxa7&quot;, &quot;Sox2&quot;, &quot;Eomes&quot;, &quot;Nanog&quot;, &quot;Sp6&quot;, &quot;Wnt8a&quot;, &quot;Wnt3a&quot;, &quot;Fgf10&quot;, &quot;Fgf8&quot;)</code></pre>
+<p>Plot scaled expression values of markers:</p>
+<pre class="r"><code>mat &lt;- logcounts(sce)
 
-sig &lt;- Filter(length, sig)</code></pre>
-<div id="dimension" class="section level3 tabset">
-<h3>Dimension</h3>
-<p>Create dimensionality reduction plots coloured by the top 5 marker genes:</p>
-<pre class="r"><code>for (n in names(sig)) {
-  
-  obj &lt;- mnn[[n]]
-  
-  plt &lt;- plotUMAP(obj, colour_by = &quot;cluster_walktrap&quot;, shape_by = &quot;batch&quot;)
-  
-  cat(&quot;#### Cluster&quot;, n, &quot;\n&quot;)
+mat &lt;- mat[ids, ]
 
-  print(plt)
+mat &lt;- mat[, order(sce$germ_layer)]
 
-  cat(&quot;\n\n&quot;)
+mat &lt;- mat - rowMeans(mat)
 
-}</code></pre>
-<div id="cluster-3" class="section level4">
-<h4>Cluster 3</h4>
-<p><img src="figure/04-analysis.Rmd/unnamed-chunk-14-1.png" width="576" style="display: block; margin: auto;" /></p>
-</div>
-<div id="cluster-5" class="section level4">
-<h4>Cluster 5</h4>
-<p><img src="figure/04-analysis.Rmd/unnamed-chunk-14-2.png" width="576" style="display: block; margin: auto;" /></p>
-</div>
-</div>
-<div id="heatmap" class="section level3 tabset">
-<h3>Heatmap</h3>
-<p>Create a heatmap of expression values for the top 5 marker genes:</p>
-<pre class="r"><code>for (n in names(sig)) {
+val &lt;- max(abs(mat))
 
-  obj &lt;- mnn[[n]]
-  
-  ids &lt;- sig[[n]]
+lim &lt;- c(-val, val)
 
-  cat(&quot;#### Cluster&quot;, n, &quot;\n&quot;)
+mat[mat &lt; lim[1]] &lt;- lim[1]
 
-  plotHeatmap(obj, ids, exprs_values = &quot;reconstructed&quot;, center = TRUE, symmetric = TRUE, colour_columns_by = &quot;batch&quot;, order_columns_by = &quot;cluster_walktrap&quot;, show_colnames = FALSE, cluster_rows = ifelse(length(ids) &gt;= 2, TRUE, FALSE))
+mat[mat &gt; lim[2]] &lt;- lim[2]
 
-  cat(&quot;\n\n&quot;)
+pal &lt;- colorRampPalette(rev(RColorBrewer::brewer.pal(5, name = &quot;RdYlBu&quot;)))
 
-}</code></pre>
-<div id="cluster-3-1" class="section level4">
-<h4>Cluster 3</h4>
-<p><img src="figure/04-analysis.Rmd/unnamed-chunk-15-1.png" width="960" style="display: block; margin: auto;" /></p>
-</div>
-<div id="cluster-5-1" class="section level4">
-<h4>Cluster 5</h4>
-<p><img src="figure/04-analysis.Rmd/unnamed-chunk-15-2.png" width="960" style="display: block; margin: auto;" /></p>
-</div>
-</div>
+col &lt;- pal(100)
+
+brk &lt;- seq(lim[1], lim[2], length.out = 101)
+
+ann &lt;- list(
+  col = data.frame(
+    Cluster = sce$cluster,
+    Layer = sce$germ_layer,
+    row.names = colnames(sce)
+  )
+)
+
+pheatmap::pheatmap(
+  mat, 
+  color = col, 
+  breaks = brk, 
+  scale = &quot;none&quot;, 
+  cluster_rows = TRUE, 
+  cluster_cols = FALSE, 
+  annotation_col = ann$col,
+  show_colnames = FALSE
+)</code></pre>
+<p><img src="figure/01-analysis.Rmd/unnamed-chunk-9-1.png" width="768" style="display: block; margin: auto;" /></p>
 </div>
 <div id="summary" class="section level2">
 <h2>Summary</h2>
-<div id="output" class="section level3">
-<h3>Output</h3>
-<pre class="r"><code>saveRDS(mnn, file = here(&quot;data/04-analysis.rds&quot;))</code></pre>
-</div>
+<p>Save experiment object to disk:</p>
+<pre class="r"><code>saveRDS(sce, here::here(&quot;data/01-analysis.rds&quot;))</code></pre>
 </div>
 
 

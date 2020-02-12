@@ -13,7 +13,7 @@
 
 <meta name="date" content="2019-10-23" />
 
-<title>Analysis 4</title>
+<title>Analysis 2</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -441,7 +441,7 @@ div.section {
 
 
 
-<h1 class="title toc-ignore">Analysis 4</h1>
+<h1 class="title toc-ignore">Analysis 2</h1>
 <h4 class="author">James Ashmore</h4>
 <h4 class="date">2019-10-23</h4>
 
@@ -492,7 +492,7 @@ This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis
 </div>
 <div id="strongRMarkdownfilestronguncommittedchanges" class="panel-collapse collapse">
 <div class="panel-body">
-<p>The R Markdown file has unstaged changes. To know which version of the R Markdown file created these results, you’ll want to first commit it to the Git repo. If you’re still working on the analysis, you can ignore this warning. When you’re finished, you can run <code>wflow_publish</code> to commit the R Markdown file and build the HTML.</p>
+<p>The R Markdown is untracked by Git. To know which version of the R Markdown file created these results, you’ll want to first commit it to the Git repo. If you’re still working on the analysis, you can ignore this warning. When you’re finished, you can run <code>wflow_publish</code> to commit the R Markdown file and build the HTML.</p>
 </div>
 </div>
 </div>
@@ -574,6 +574,7 @@ Ignored files:
     Ignored:    .Rproj.user/
     Ignored:    analysis/.DS_Store
     Ignored:    analysis/cache/
+    Ignored:    analysis/figure/
     Ignored:    shiny/
 
 Untracked files:
@@ -602,69 +603,9 @@ Note that any generated files, e.g. HTML, png, CSS, etc., are not included in t
 <hr>
 </div>
 <div id="versions" class="tab-pane fade">
-
 <p>
-These are the previous versions of the R Markdown and HTML files. If you’ve configured a remote Git repository (see <code>?wflow_git_remote</code>), click on the hyperlinks in the table below to view them.
+There are no past versions. Publish this analysis with <code>wflow_publish()</code> to start tracking its development.
 </p>
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-File
-</th>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-<th>
-Message
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-Rmd
-</td>
-<td>
-<a href="https://github.com/jma1991/LHF/blob/0af9fb4905a5cdce9c653cda47dc201fd1e66a75/analysis/04-analysis.Rmd" target="_blank">0af9fb4</a>
-</td>
-<td>
-James Ashmore
-</td>
-<td>
-2019-12-18
-</td>
-<td>
-wflow_publish(files = c(&quot;analysis/_site.yml“,”analysis/index.Rmd“,”analysis/04-analysis.Rmd“,”analysis/05-analysis.Rmd“,”analysis/06-analysis.Rmd&quot;), dry_run = TRUE)
-</td>
-</tr>
-<tr>
-<td>
-html
-</td>
-<td>
-<a href="https://rawcdn.githack.com/jma1991/LHF/f20ba0249daea9316ccf31c6f5a4602f9d0985ef/docs/04-analysis.html" target="_blank">f20ba02</a>
-</td>
-<td>
-James Ashmore
-</td>
-<td>
-2019-12-18
-</td>
-<td>
-Build site.
-</td>
-</tr>
-</tbody>
-</table>
-</div>
 <hr>
 </div>
 </div>
@@ -675,7 +616,8 @@ Build site.
 <pre class="r"><code>knitr::opts_chunk$set(
   autodep    = TRUE,
   cache      = TRUE,
-  cache.path = &quot;cache/04-analysis.Rmd/&quot;,
+  cache.path = &quot;cache/02-analysis.Rmd/&quot;,
+  cache.lazy = FALSE,
   dev        = &quot;png&quot;,
   error      = FALSE,
   message    = FALSE,
@@ -685,35 +627,208 @@ Build site.
 <div id="packages" class="section level2">
 <h2>Packages</h2>
 <p>Load required analysis packages:</p>
-<pre class="r"><code>pacman::p_load(batchelor, gam, here, readr, scater, scran, slingshot, RColorBrewer, pheatmap, igraph, EnsDb.Mmusculus.v79)</code></pre>
+<pre class="r"><code>pacman::p_load(batchelor, gam, here, readr, scater, scran, slingshot, RColorBrewer, pheatmap, BiocParallel)</code></pre>
 </div>
-<div id="setup-1" class="section level2">
-<h2>Setup</h2>
+<div id="parallelization" class="section level2">
+<h2>Parallelization</h2>
+<pre class="r"><code>bpparam &lt;- MulticoreParam(4)</code></pre>
+</div>
+<div id="atlas" class="section level2">
+<h2>Atlas</h2>
 <p>Load the MouseGastrulationData package:</p>
 <pre class="r"><code>pacman::p_load(MouseGastrulationData)</code></pre>
 <p>Modify colour palette to include unassigned and unknown cells:</p>
 <pre class="r"><code>EmbryoCelltypeColours &lt;- c(EmbryoCelltypeColours, unassigned = &quot;#999999&quot;, unknown = &quot;#999999&quot;)</code></pre>
+<p>Select samples from embryonic stage E8.25:</p>
+<pre class="r"><code>sel &lt;- subset(AtlasSampleMetadata, stage %in% c(&quot;E7.0&quot;, &quot;E7.25&quot;, &quot;E7.5&quot;, &quot;E7.75&quot;))</code></pre>
+<p>Obtain processed counts from the dataset:</p>
+<pre class="r"><code>ref &lt;- EmbryoAtlasData(type = &quot;processed&quot;, samples = sel$sample)</code></pre>
+<p>Remove cells with no defined cell type:</p>
+<pre class="r"><code>nan &lt;- is.na(ref$celltype)
+ref &lt;- ref[, !nan]</code></pre>
+<p>Compute log-transformed normalized expression values:</p>
+<pre class="r"><code>ref &lt;- logNormCounts(ref)</code></pre>
+<p>Change dimension names to those required by the scater package:</p>
+<pre class="r"><code>reducedDimNames(ref) &lt;- c(&quot;PCA&quot;, &quot;UMAP&quot;)</code></pre>
+<p>Plot UMAP showing all the selected cells:</p>
+<pre class="r"><code>plt &lt;- plotUMAP(ref)
+
+plt$data$colour_by &lt;- ref$celltype
+
+plt$data$facet_by &lt;- ref$stage
+
+ggplot(plt$data, aes(X, Y)) +
+  geom_point(aes(colour = colour_by)) + 
+  facet_wrap(~ facet_by, scales = &quot;fixed&quot;) + 
+  scale_colour_manual(name = &quot;Cell type&quot;, values = EmbryoCelltypeColours) +
+  theme_void() +
+  theme(aspect.ratio = 1)</code></pre>
+<p><img src="figure/02-analysis.Rmd/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
-<div id="import" class="section level2">
-<h2>Import</h2>
-<p>Load the merged dataset:</p>
-<pre class="r"><code>mnn &lt;- read_rds(here(&quot;data/02-analysis.rds&quot;))</code></pre>
-<p>Annotate gene identifiers:</p>
-<pre class="r"><code>rowData(mnn)$ENSEMBL &lt;- rownames(mnn)
+<div id="ehf" class="section level2">
+<h2>EHF</h2>
+<p>Load the EHF dataset:</p>
+<pre class="r"><code>sce &lt;- read_rds(here(&quot;data/01-analysis.rds&quot;))</code></pre>
+</div>
+<div id="neighbors" class="section level2">
+<h2>Neighbors</h2>
+<p>Clear spike-in information across batches:</p>
+<pre class="r"><code>ref &lt;- clearSpikes(ref)
 
-rowData(mnn)$SYMBOL &lt;- mapIds(EnsDb.Mmusculus.v79, keys = rownames(mnn), column = &quot;SYMBOL&quot;, keytype = &quot;GENEID&quot;)
+sce &lt;- clearSpikes(sce)</code></pre>
+<p>Filter batches to contain same genes:</p>
+<pre class="r"><code>rownames(ref) &lt;- rowData(ref)$ENSEMBL
 
-rownames(mnn) &lt;- uniquifyFeatureNames(rowData(mnn)$ENSEMBL, rowData(mnn)$SYMBOL)</code></pre>
-<p>Plot UMAP showing neighbour and batch annotation:</p>
+rownames(sce) &lt;- rowData(sce)$gene_id
+
+ids &lt;- intersect(rownames(ref), rownames(sce))
+
+ref &lt;- ref[ids, ]
+
+sce &lt;- sce[ids, ]</code></pre>
+<p>Select genes with positive average biological components:</p>
+<pre class="r"><code>mod &lt;- model.matrix(~ stage + sample, data = colData(ref))
+
+var.ref &lt;- modelGeneVar(ref, design = mod, BPPARAM = bpparam)
+  
+var.sce &lt;- modelGeneVar(sce, block = sce$phase, BPPARAM = bpparam)
+
+dec &lt;- combineVar(var.ref, var.sce)
+
+hvg &lt;- rownames(dec)[dec$bio &gt; 0]</code></pre>
+<p>Rename cells from query and reference data:</p>
+<pre class="r"><code>colnames(sce) &lt;- paste0(&quot;wilson-&quot;, seq_len(ncol(sce)))
+
+colnames(ref) &lt;- paste0(&quot;marioni-&quot;, seq_len(ncol(ref)))</code></pre>
+<p>Correct for batch effects using a fast version of the MNN method:</p>
+<pre class="r"><code>mnn &lt;- fastMNN(ref, sce, pc.input = TRUE, subset.row = hvg, BPPARAM = bpparam)
+
+reducedDimNames(mnn) &lt;- &quot;MNN&quot;</code></pre>
+<p>Incorporate raw and log counts from original data:</p>
+<pre class="r"><code>assay(mnn, &quot;counts&quot;) &lt;- cbind(assay(ref[hvg, ], &quot;counts&quot;), assay(sce[hvg, ], &quot;counts&quot;))
+
+assay(mnn, &quot;logcounts&quot;) &lt;- cbind(assay(ref[hvg, ], &quot;logcounts&quot;), assay(sce[hvg, ], &quot;logcounts&quot;))</code></pre>
+<p>Annotate merged dataset with metadata:</p>
+<pre class="r"><code>#Batch
+mnn$batch &lt;- ifelse(mnn$batch == 1, &quot;Marioni&quot;, &quot;Wilson&quot;)
+
+# Celltype
+mnn$celltype &lt;- c(ref$celltype, sce$cellassign_celltype)
+
+# Pool
+mnn$stage &lt;- &quot;NA&quot;
+mnn$stage[mnn$batch == &quot;Marioni&quot;] &lt;- ref$stage
+
+# Sample
+mnn$sample &lt;- &quot;NA&quot;
+mnn$sample[mnn$batch == &quot;Marioni&quot;] &lt;- ref$sample
+
+# Phase
+mnn$phase &lt;- &quot;NA&quot;
+mnn$phase[mnn$batch == &quot;Wilson&quot;] &lt;- as.character(sce$phase)
+
+# Phase
+mnn$germ &lt;- &quot;NA&quot;
+mnn$germ[mnn$batch == &quot;Wilson&quot;] &lt;- as.character(sce$germ_layer)</code></pre>
+<p>Choose optimal K from reference cells:</p>
+<pre class="r"><code>dim &lt;- reducedDim(mnn, &quot;MNN&quot;)[mnn$batch == &quot;Marioni&quot;, ]
+
+colnames(dim) &lt;- paste0(&quot;PC&quot;, seq_len(ncol(dim)))
+
+dim &lt;- as.data.frame(dim)
+
+fct &lt;- paste0(mnn$stage, &quot;-&quot;, mnn$celltype)[mnn$batch == &quot;Marioni&quot;]
+
+mod &lt;- caret::trainControl(
+  method = &quot;LGOCV&quot;, 
+  p = 0.7,
+  number = 1,
+  savePredictions = TRUE
+)
+
+grd &lt;- expand.grid(k = seq(1, 50, by = 2))
+
+set.seed(1701)
+
+fit &lt;- caret::train(x = dim, y = fct, method = &quot;knn&quot;, tuneGrid = grd, trControl = mod)
+
+num &lt;- fit$bestTune$k</code></pre>
+<p>Identify kNN from reference cells:</p>
+<pre class="r"><code>set.seed(1701)
+
+num &lt;- 2
+
+sbj &lt;- reducedDim(mnn, &quot;MNN&quot;)[mnn$batch == &quot;Marioni&quot;, ]
+
+qry &lt;- reducedDim(mnn, &quot;MNN&quot;)[mnn$batch == &quot;Wilson&quot;, ]
+
+knn &lt;- BiocNeighbors::queryKNN(sbj, qry, k = num)</code></pre>
+<p>Annotate cell type using kNN cells:</p>
+<pre class="r"><code>nan &lt;- rep(NA, ncol(sce))
+
+# Neighbor
+
+mnn$neighbor &lt;- c(ref$celltype, nan)
+
+lab &lt;- apply(knn$index, 1, function(x) names(which.max(table(ref$celltype[x]))))
+
+mnn$neighbor[mnn$batch == &quot;Wilson&quot;] &lt;- lab
+
+# Stage
+
+mnn$stage &lt;- c(ref$stage, nan)
+
+lab &lt;- apply(knn$index, 1, function(x) names(which.max(table(ref$stage[x]))))
+
+mnn$stage[mnn$batch == &quot;Wilson&quot;] &lt;- lab</code></pre>
+<p>Filter merged dataset to k closest cells:</p>
+<pre class="r"><code>id1 &lt;- which(mnn$batch == &quot;Wilson&quot;)
+
+len &lt;- seq_len(num)
+
+id2 &lt;- as.vector(knn$index[, len])
+
+idx &lt;- c(id1, id2)
+
+idx &lt;- unique(sort(idx))
+
+mnn &lt;- mnn[, idx]</code></pre>
+<p>Perform UMAP on the PCA data from the combined dataset:</p>
+<pre class="r"><code>set.seed(1701)
+
+mnn &lt;- runUMAP(mnn, n_neighbors = 50, dimred = &quot;MNN&quot;, BPPARAM = bpparam)</code></pre>
+<p>Plot UMAP showing batch annotation:</p>
 <pre class="r"><code>plt &lt;- plotUMAP(mnn)
-
-plt$data$fill_by &lt;- mnn$neighbor
 
 plt$data$colour_by &lt;- mnn$batch
 
 plt$data$facet_by &lt;- mnn$stage
 
-col &lt;- EmbryoCelltypeColours
+col &lt;- c(&quot;Marioni&quot; = &quot;#d9d9d9&quot;, &quot;Wilson&quot; = &quot;#000000&quot;)
+
+ggplot(plt$data, aes(X, Y)) +
+  geom_point(aes(colour = colour_by)) + 
+  facet_wrap(~ facet_by, scales = &quot;fixed&quot;) + 
+  scale_colour_manual(name = &quot;Batch&quot;, values = col) +
+  theme_void() +
+  theme(aspect.ratio = 1)</code></pre>
+<p><img src="figure/02-analysis.Rmd/unnamed-chunk-24-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>Plot UMAP showing celltype annotation:</p>
+<pre class="r"><code>plt &lt;- plotUMAP(mnn)
+
+plt$data$fill_by &lt;- mnn$celltype
+
+plt$data$colour_by &lt;- mnn$batch
+
+plt$data$facet_by &lt;- mnn$stage
+
+col &lt;- setdiff(unique(mnn$celltype), unique(mnn$neighbor))
+
+col &lt;- RColorBrewer::brewer.pal(length(col), name = &quot;Set1&quot;)
+
+names(col) &lt;- setdiff(unique(mnn$celltype), unique(mnn$neighbor))
+
+col &lt;- c(EmbryoCelltypeColours, col)
 
 pch &lt;- c(&quot;Marioni&quot; = &quot;transparent&quot;, &quot;Wilson&quot; = &quot;#000000&quot;)
 
@@ -724,8 +839,8 @@ ggplot(plt$data, aes(X, Y)) +
   scale_colour_manual(name = &quot;Batch&quot;, values = pch, limits = &quot;Wilson&quot;) + 
   theme_void() +
   theme(aspect.ratio = 1)</code></pre>
-<p><img src="figure/04-analysis.Rmd/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>Plot UMAP showing germ layer and batch annotation:</p>
+<p><img src="figure/02-analysis.Rmd/unnamed-chunk-25-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>Plot UMAP showing germ layer annotation:</p>
 <pre class="r"><code>plt &lt;- plotUMAP(mnn)
 
 plt$data$fill_by &lt;- mnn$germ
@@ -747,178 +862,30 @@ ggplot(plt$data, aes(X, Y)) +
   scale_colour_manual(name = &quot;Batch&quot;, values = pch, limits = &quot;Wilson&quot;) + 
   theme_void() +
   theme(aspect.ratio = 1)</code></pre>
-<p><img src="figure/04-analysis.Rmd/unnamed-chunk-7-1.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>snn &lt;- buildSNNGraph(mnn, assay.type = &quot;reconstructed&quot;, use.dimred = &quot;MNN&quot;)
-
-cls &lt;- igraph::cluster_walktrap(snn)$membership
-
-mnn$cluster_full &lt;- factor(cls)</code></pre>
+<p><img src="figure/02-analysis.Rmd/unnamed-chunk-26-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>Plot UMAP showing neighbour and batch annotation:</p>
 <pre class="r"><code>plt &lt;- plotUMAP(mnn)
 
-plt$data$fill_by &lt;- mnn$cluster_full
+plt$data$fill_by &lt;- mnn$neighbor
 
 plt$data$colour_by &lt;- mnn$batch
 
 plt$data$facet_by &lt;- mnn$stage
 
+col &lt;- EmbryoCelltypeColours
+
 pch &lt;- c(&quot;Marioni&quot; = &quot;transparent&quot;, &quot;Wilson&quot; = &quot;#000000&quot;)
 
-ggplot(plt$data, aes(X, Y)) + 
-  geom_point(data = plt$data[, 1:4], mapping = aes(X, Y), colour = &quot;grey&quot;) + 
+ggplot(plt$data, aes(X, Y)) +
   geom_point(aes(fill = fill_by, colour = colour_by), shape = 21) + 
   facet_wrap(~ facet_by, scales = &quot;fixed&quot;) + 
-  scale_fill_brewer(name = &quot;Cluster&quot;, palette = &quot;Set1&quot;) + 
+  scale_fill_manual(name = &quot;Cell type&quot;, values = col) + 
   scale_colour_manual(name = &quot;Batch&quot;, values = pch, limits = &quot;Wilson&quot;) + 
   theme_void() +
   theme(aspect.ratio = 1)</code></pre>
-<p><img src="figure/04-analysis.Rmd/unnamed-chunk-9-1.png" width="960" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-9-1">
-Past versions of unnamed-chunk-9-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-9-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/jma1991/LHF/blob/f20ba0249daea9316ccf31c6f5a4602f9d0985ef/docs/figure/04-analysis.Rmd/unnamed-chunk-9-1.png" target="_blank">f20ba02</a>
-</td>
-<td>
-James Ashmore
-</td>
-<td>
-2019-12-18
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-</div>
-<div id="sub-clustering" class="section level2">
-<h2>Sub-clustering</h2>
-<pre class="r"><code>sclust &lt;- function(obj) {
-  
-  ref &lt;- mnn[, mnn$batch == &quot;Marioni&quot;]
-  
-  sce &lt;- mnn[, mnn$batch == &quot;Wilson&quot;]
-  
-  dec &lt;- combineVar(modelGeneVar(ref), modelGeneVar(sce, block = sce$phase))
-  
-  hvg &lt;- rownames(dec)[dec$bio &gt; 0]
-  
-  snn &lt;- buildSNNGraph(obj, assay.type = &quot;reconstructed&quot;, use.dimred = &quot;MNN&quot;, subset.row = hvg)
-  
-  cls &lt;- igraph::cluster_walktrap(snn)$membership
-  
-  obj$cluster_walktrap &lt;- factor(cls)
-  
-  return(obj)
-  
-}</code></pre>
-<pre class="r"><code>tbl &lt;- table(mnn$cluster_full)
-
-lvl &lt;- names(tbl)
-
-lvl &lt;- lvl[tbl &gt; 1]</code></pre>
-<pre class="r"><code>mnn &lt;- lapply(lvl, function(x) {
-  
-  obj &lt;- mnn[, mnn$cluster_full == x]
-  
-  obj &lt;- sclust(obj)
-  
-  obj
-
-})
-
-names(mnn) &lt;- lvl</code></pre>
-<pre class="r"><code>sig &lt;- lapply(mnn, function(x) {
-  
-  m &lt;- findMarkers(x, x$cluster_walktrap, block = x$batch, assay.type = &quot;logcounts&quot;)
-  
-  m &lt;- lapply(m, subset, FDR &lt; 0.1)
-  
-  m &lt;- lapply(m, head, n = 25)
-  
-  m &lt;- lapply(m, rownames)
-  
-  m &lt;- unique(sort(unlist(m)))
-
-})
-
-sig &lt;- Filter(length, sig)</code></pre>
-<div id="dimension" class="section level3 tabset">
-<h3>Dimension</h3>
-<p>Create dimensionality reduction plots coloured by the top 5 marker genes:</p>
-<pre class="r"><code>for (n in names(sig)) {
-  
-  obj &lt;- mnn[[n]]
-  
-  plt &lt;- plotUMAP(obj, colour_by = &quot;cluster_walktrap&quot;, shape_by = &quot;batch&quot;)
-  
-  cat(&quot;#### Cluster&quot;, n, &quot;\n&quot;)
-
-  print(plt)
-
-  cat(&quot;\n\n&quot;)
-
-}</code></pre>
-<div id="cluster-3" class="section level4">
-<h4>Cluster 3</h4>
-<p><img src="figure/04-analysis.Rmd/unnamed-chunk-14-1.png" width="576" style="display: block; margin: auto;" /></p>
-</div>
-<div id="cluster-5" class="section level4">
-<h4>Cluster 5</h4>
-<p><img src="figure/04-analysis.Rmd/unnamed-chunk-14-2.png" width="576" style="display: block; margin: auto;" /></p>
-</div>
-</div>
-<div id="heatmap" class="section level3 tabset">
-<h3>Heatmap</h3>
-<p>Create a heatmap of expression values for the top 5 marker genes:</p>
-<pre class="r"><code>for (n in names(sig)) {
-
-  obj &lt;- mnn[[n]]
-  
-  ids &lt;- sig[[n]]
-
-  cat(&quot;#### Cluster&quot;, n, &quot;\n&quot;)
-
-  plotHeatmap(obj, ids, exprs_values = &quot;reconstructed&quot;, center = TRUE, symmetric = TRUE, colour_columns_by = &quot;batch&quot;, order_columns_by = &quot;cluster_walktrap&quot;, show_colnames = FALSE, cluster_rows = ifelse(length(ids) &gt;= 2, TRUE, FALSE))
-
-  cat(&quot;\n\n&quot;)
-
-}</code></pre>
-<div id="cluster-3-1" class="section level4">
-<h4>Cluster 3</h4>
-<p><img src="figure/04-analysis.Rmd/unnamed-chunk-15-1.png" width="960" style="display: block; margin: auto;" /></p>
-</div>
-<div id="cluster-5-1" class="section level4">
-<h4>Cluster 5</h4>
-<p><img src="figure/04-analysis.Rmd/unnamed-chunk-15-2.png" width="960" style="display: block; margin: auto;" /></p>
-</div>
-</div>
-</div>
-<div id="summary" class="section level2">
-<h2>Summary</h2>
-<div id="output" class="section level3">
-<h3>Output</h3>
-<pre class="r"><code>saveRDS(mnn, file = here(&quot;data/04-analysis.rds&quot;))</code></pre>
-</div>
+<p><img src="figure/02-analysis.Rmd/unnamed-chunk-27-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>Save merged dataset for further exploration:</p>
+<pre class="r"><code>write_rds(mnn, here(&quot;data/02-analysis.rds&quot;))</code></pre>
 </div>
 
 

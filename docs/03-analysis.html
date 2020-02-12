@@ -13,7 +13,7 @@
 
 <meta name="date" content="2019-10-23" />
 
-<title>Analysis 4</title>
+<title>Analysis 3</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -441,7 +441,7 @@ div.section {
 
 
 
-<h1 class="title toc-ignore">Analysis 4</h1>
+<h1 class="title toc-ignore">Analysis 3</h1>
 <h4 class="author">James Ashmore</h4>
 <h4 class="date">2019-10-23</h4>
 
@@ -492,7 +492,7 @@ This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis
 </div>
 <div id="strongRMarkdownfilestronguncommittedchanges" class="panel-collapse collapse">
 <div class="panel-body">
-<p>The R Markdown file has unstaged changes. To know which version of the R Markdown file created these results, you’ll want to first commit it to the Git repo. If you’re still working on the analysis, you can ignore this warning. When you’re finished, you can run <code>wflow_publish</code> to commit the R Markdown file and build the HTML.</p>
+<p>The R Markdown is untracked by Git. To know which version of the R Markdown file created these results, you’ll want to first commit it to the Git repo. If you’re still working on the analysis, you can ignore this warning. When you’re finished, you can run <code>wflow_publish</code> to commit the R Markdown file and build the HTML.</p>
 </div>
 </div>
 </div>
@@ -602,69 +602,9 @@ Note that any generated files, e.g. HTML, png, CSS, etc., are not included in t
 <hr>
 </div>
 <div id="versions" class="tab-pane fade">
-
 <p>
-These are the previous versions of the R Markdown and HTML files. If you’ve configured a remote Git repository (see <code>?wflow_git_remote</code>), click on the hyperlinks in the table below to view them.
+There are no past versions. Publish this analysis with <code>wflow_publish()</code> to start tracking its development.
 </p>
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-File
-</th>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-<th>
-Message
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-Rmd
-</td>
-<td>
-<a href="https://github.com/jma1991/LHF/blob/0af9fb4905a5cdce9c653cda47dc201fd1e66a75/analysis/04-analysis.Rmd" target="_blank">0af9fb4</a>
-</td>
-<td>
-James Ashmore
-</td>
-<td>
-2019-12-18
-</td>
-<td>
-wflow_publish(files = c(&quot;analysis/_site.yml“,”analysis/index.Rmd“,”analysis/04-analysis.Rmd“,”analysis/05-analysis.Rmd“,”analysis/06-analysis.Rmd&quot;), dry_run = TRUE)
-</td>
-</tr>
-<tr>
-<td>
-html
-</td>
-<td>
-<a href="https://rawcdn.githack.com/jma1991/LHF/f20ba0249daea9316ccf31c6f5a4602f9d0985ef/docs/04-analysis.html" target="_blank">f20ba02</a>
-</td>
-<td>
-James Ashmore
-</td>
-<td>
-2019-12-18
-</td>
-<td>
-Build site.
-</td>
-</tr>
-</tbody>
-</table>
-</div>
 <hr>
 </div>
 </div>
@@ -675,7 +615,8 @@ Build site.
 <pre class="r"><code>knitr::opts_chunk$set(
   autodep    = TRUE,
   cache      = TRUE,
-  cache.path = &quot;cache/04-analysis.Rmd/&quot;,
+  cache.path = &quot;cache/03-analysis.Rmd/&quot;,
+  cache.lazy = FALSE,
   dev        = &quot;png&quot;,
   error      = FALSE,
   message    = FALSE,
@@ -724,7 +665,7 @@ ggplot(plt$data, aes(X, Y)) +
   scale_colour_manual(name = &quot;Batch&quot;, values = pch, limits = &quot;Wilson&quot;) + 
   theme_void() +
   theme(aspect.ratio = 1)</code></pre>
-<p><img src="figure/04-analysis.Rmd/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/03-analysis.Rmd/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>Plot UMAP showing germ layer and batch annotation:</p>
 <pre class="r"><code>plt &lt;- plotUMAP(mnn)
 
@@ -747,68 +688,7 @@ ggplot(plt$data, aes(X, Y)) +
   scale_colour_manual(name = &quot;Batch&quot;, values = pch, limits = &quot;Wilson&quot;) + 
   theme_void() +
   theme(aspect.ratio = 1)</code></pre>
-<p><img src="figure/04-analysis.Rmd/unnamed-chunk-7-1.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>snn &lt;- buildSNNGraph(mnn, assay.type = &quot;reconstructed&quot;, use.dimred = &quot;MNN&quot;)
-
-cls &lt;- igraph::cluster_walktrap(snn)$membership
-
-mnn$cluster_full &lt;- factor(cls)</code></pre>
-<pre class="r"><code>plt &lt;- plotUMAP(mnn)
-
-plt$data$fill_by &lt;- mnn$cluster_full
-
-plt$data$colour_by &lt;- mnn$batch
-
-plt$data$facet_by &lt;- mnn$stage
-
-pch &lt;- c(&quot;Marioni&quot; = &quot;transparent&quot;, &quot;Wilson&quot; = &quot;#000000&quot;)
-
-ggplot(plt$data, aes(X, Y)) + 
-  geom_point(data = plt$data[, 1:4], mapping = aes(X, Y), colour = &quot;grey&quot;) + 
-  geom_point(aes(fill = fill_by, colour = colour_by), shape = 21) + 
-  facet_wrap(~ facet_by, scales = &quot;fixed&quot;) + 
-  scale_fill_brewer(name = &quot;Cluster&quot;, palette = &quot;Set1&quot;) + 
-  scale_colour_manual(name = &quot;Batch&quot;, values = pch, limits = &quot;Wilson&quot;) + 
-  theme_void() +
-  theme(aspect.ratio = 1)</code></pre>
-<p><img src="figure/04-analysis.Rmd/unnamed-chunk-9-1.png" width="960" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-9-1">
-Past versions of unnamed-chunk-9-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-9-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/jma1991/LHF/blob/f20ba0249daea9316ccf31c6f5a4602f9d0985ef/docs/figure/04-analysis.Rmd/unnamed-chunk-9-1.png" target="_blank">f20ba02</a>
-</td>
-<td>
-James Ashmore
-</td>
-<td>
-2019-12-18
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
+<p><img src="figure/03-analysis.Rmd/unnamed-chunk-7-1.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 <div id="sub-clustering" class="section level2">
 <h2>Sub-clustering</h2>
@@ -817,7 +697,7 @@ James Ashmore
   ref &lt;- mnn[, mnn$batch == &quot;Marioni&quot;]
   
   sce &lt;- mnn[, mnn$batch == &quot;Wilson&quot;]
-  
+
   dec &lt;- combineVar(modelGeneVar(ref), modelGeneVar(sce, block = sce$phase))
   
   hvg &lt;- rownames(dec)[dec$bio &gt; 0]
@@ -831,14 +711,14 @@ James Ashmore
   return(obj)
   
 }</code></pre>
-<pre class="r"><code>tbl &lt;- table(mnn$cluster_full)
+<pre class="r"><code>tbl &lt;- table(mnn$neighbor)
 
 lvl &lt;- names(tbl)
 
 lvl &lt;- lvl[tbl &gt; 1]</code></pre>
 <pre class="r"><code>mnn &lt;- lapply(lvl, function(x) {
   
-  obj &lt;- mnn[, mnn$cluster_full == x]
+  obj &lt;- mnn[, mnn$neighbor == x]
   
   obj &lt;- sclust(obj)
   
@@ -871,20 +751,20 @@ sig &lt;- Filter(length, sig)</code></pre>
   
   plt &lt;- plotUMAP(obj, colour_by = &quot;cluster_walktrap&quot;, shape_by = &quot;batch&quot;)
   
-  cat(&quot;#### Cluster&quot;, n, &quot;\n&quot;)
+  cat(&quot;#### &quot;, n, &quot;\n&quot;)
 
   print(plt)
 
   cat(&quot;\n\n&quot;)
 
 }</code></pre>
-<div id="cluster-3" class="section level4">
-<h4>Cluster 3</h4>
-<p><img src="figure/04-analysis.Rmd/unnamed-chunk-14-1.png" width="576" style="display: block; margin: auto;" /></p>
+<div id="gut" class="section level4">
+<h4>Gut</h4>
+<p><img src="figure/03-analysis.Rmd/unnamed-chunk-12-1.png" width="576" style="display: block; margin: auto;" /></p>
 </div>
-<div id="cluster-5" class="section level4">
-<h4>Cluster 5</h4>
-<p><img src="figure/04-analysis.Rmd/unnamed-chunk-14-2.png" width="576" style="display: block; margin: auto;" /></p>
+<div id="intermediate-mesoderm" class="section level4">
+<h4>Intermediate mesoderm</h4>
+<p><img src="figure/03-analysis.Rmd/unnamed-chunk-12-2.png" width="576" style="display: block; margin: auto;" /></p>
 </div>
 </div>
 <div id="heatmap" class="section level3 tabset">
@@ -896,20 +776,20 @@ sig &lt;- Filter(length, sig)</code></pre>
   
   ids &lt;- sig[[n]]
 
-  cat(&quot;#### Cluster&quot;, n, &quot;\n&quot;)
+  cat(&quot;#### &quot;, n, &quot;\n&quot;)
 
   plotHeatmap(obj, ids, exprs_values = &quot;reconstructed&quot;, center = TRUE, symmetric = TRUE, colour_columns_by = &quot;batch&quot;, order_columns_by = &quot;cluster_walktrap&quot;, show_colnames = FALSE, cluster_rows = ifelse(length(ids) &gt;= 2, TRUE, FALSE))
 
   cat(&quot;\n\n&quot;)
 
 }</code></pre>
-<div id="cluster-3-1" class="section level4">
-<h4>Cluster 3</h4>
-<p><img src="figure/04-analysis.Rmd/unnamed-chunk-15-1.png" width="960" style="display: block; margin: auto;" /></p>
+<div id="gut-1" class="section level4">
+<h4>Gut</h4>
+<p><img src="figure/03-analysis.Rmd/unnamed-chunk-13-1.png" width="960" style="display: block; margin: auto;" /></p>
 </div>
-<div id="cluster-5-1" class="section level4">
-<h4>Cluster 5</h4>
-<p><img src="figure/04-analysis.Rmd/unnamed-chunk-15-2.png" width="960" style="display: block; margin: auto;" /></p>
+<div id="intermediate-mesoderm-1" class="section level4">
+<h4>Intermediate mesoderm</h4>
+<p><img src="figure/03-analysis.Rmd/unnamed-chunk-13-2.png" width="960" style="display: block; margin: auto;" /></p>
 </div>
 </div>
 </div>
@@ -917,7 +797,7 @@ sig &lt;- Filter(length, sig)</code></pre>
 <h2>Summary</h2>
 <div id="output" class="section level3">
 <h3>Output</h3>
-<pre class="r"><code>saveRDS(mnn, file = here(&quot;data/04-analysis.rds&quot;))</code></pre>
+<pre class="r"><code>saveRDS(mnn, file = here(&quot;data/03-analysis.rds&quot;))</code></pre>
 </div>
 </div>
 
