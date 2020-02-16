@@ -142,6 +142,10 @@ ggplot(plt$data, aes(X, Y)) +
   theme(aspect.ratio = 1)
 ```
 
+```{r}
+saveRDS(mnn, file = here("data/04-analysis.rds"))
+```
+
 ## Sub-clustering
 
 ```{r}
@@ -244,12 +248,4 @@ for (n in names(sig)) {
   cat("\n\n")
 
 }
-```
-
-## Summary
-
-### Output
-
-```{r}
-saveRDS(mnn, file = here("data/04-analysis.rds"))
 ```
