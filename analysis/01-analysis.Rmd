@@ -151,6 +151,8 @@ Manually annotate the clusters using information from Valerie Wilson:
 tbl <- read.csv(here::here("data/cell_annotation.csv"))
 
 sce$germ_layer <- tbl$germ_layer[match(sce$Sample, tbl$cell_id)]
+
+sce$germ_layer <- factor(sce$germ_layer, levels = c("ectoderm", "ps_ectoderm", "LPM", "PXM"))
 ```
 
 Ectoderm, paraxial and lateral mesoderm and streak markers:
