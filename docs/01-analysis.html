@@ -468,10 +468,10 @@ div.section {
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2020-02-12
+<strong>Last updated:</strong> 2020-02-19
 </p>
 <p>
-<strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 5 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 2
+<strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 6 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 1
 </p>
 <p>
 <strong>Knit directory:</strong> <code>LHF/</code> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="This is the local directory in which the code in this file was executed."> </span>
@@ -487,12 +487,12 @@ This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguncommittedchanges"> <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> <strong>R Markdown file:</strong> uncommitted changes </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>R Markdown file:</strong> up-to-date </a>
 </p>
 </div>
-<div id="strongRMarkdownfilestronguncommittedchanges" class="panel-collapse collapse">
+<div id="strongRMarkdownfilestronguptodate" class="panel-collapse collapse">
 <div class="panel-body">
-<p>The R Markdown is untracked by Git. To know which version of the R Markdown file created these results, you’ll want to first commit it to the Git repo. If you’re still working on the analysis, you can ignore this warning. When you’re finished, you can run <code>wflow_publish</code> to commit the R Markdown file and build the HTML.</p>
+<p>Great! Since the R Markdown file has been committed to the Git repository, you know the exact version of the code that produced these results.</p>
 </div>
 </div>
 </div>
@@ -559,10 +559,10 @@ This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomjma1991LHFtreec18e5c2626dd3339d9b52c913d5fa9e3f63b3c74targetblankc18e5c2a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/jma1991/LHF/tree/c18e5c2626dd3339d9b52c913d5fa9e3f63b3c74" target="_blank">c18e5c2</a> </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomjma1991LHFtreea1d194bfedc7d48dec6cac0201a62d348cf8a421targetblanka1d194ba"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/jma1991/LHF/tree/a1d194bfedc7d48dec6cac0201a62d348cf8a421" target="_blank">a1d194b</a> </a>
 </p>
 </div>
-<div id="strongRepositoryversionstrongahrefhttpsgithubcomjma1991LHFtreec18e5c2626dd3339d9b52c913d5fa9e3f63b3c74targetblankc18e5c2a" class="panel-collapse collapse">
+<div id="strongRepositoryversionstrongahrefhttpsgithubcomjma1991LHFtreea1d194bfedc7d48dec6cac0201a62d348cf8a421targetblanka1d194ba" class="panel-collapse collapse">
 <div class="panel-body">
 <p>
 Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility. The version displayed above was the version of the Git repository at the time these results were generated. <br><br> Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
@@ -578,18 +578,13 @@ Ignored files:
 
 Untracked files:
     Untracked:  LICENSE
-    Untracked:  analysis/01-analysis.Rmd
-    Untracked:  analysis/02-analysis.Rmd
-    Untracked:  analysis/03-analysis.Rmd
     Untracked:  markers.csv
 
 Unstaged changes:
     Modified:   .gitignore
     Modified:   _workflowr.yml
-    Modified:   analysis/04-analysis.Rmd
-    Deleted:    analysis/05-analysis.Rmd
+    Modified:   analysis/05-analysis.Rmd
     Deleted:    analysis/06-analysis.Rmd
-    Modified:   analysis/_site.yml
 
 </code></pre>
 <p>
@@ -602,9 +597,86 @@ Note that any generated files, e.g. HTML, png, CSS, etc., are not included in t
 <hr>
 </div>
 <div id="versions" class="tab-pane fade">
+
 <p>
-There are no past versions. Publish this analysis with <code>wflow_publish()</code> to start tracking its development.
+These are the previous versions of the R Markdown and HTML files. If you’ve configured a remote Git repository (see <code>?wflow_git_remote</code>), click on the hyperlinks in the table below to view them.
 </p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/jma1991/LHF/blob/a1d194bfedc7d48dec6cac0201a62d348cf8a421/analysis/01-analysis.Rmd" target="_blank">a1d194b</a>
+</td>
+<td>
+James Ashmore
+</td>
+<td>
+2020-02-19
+</td>
+<td>
+wflow_publish(files = c(“analysis/index.Rmd”, “analysis/01-analysis.Rmd”))
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/jma1991/LHF/4498865828557499c89fda94d4b8955fafc9e6f4/docs/01-analysis.html" target="_blank">4498865</a>
+</td>
+<td>
+James Ashmore
+</td>
+<td>
+2020-02-12
+</td>
+<td>
+Build site.
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/jma1991/LHF/blob/57e57787822993ac927bf6ec795d5893211281e6/analysis/01-analysis.Rmd" target="_blank">57e5778</a>
+</td>
+<td>
+James Ashmore
+</td>
+<td>
+2020-02-12
+</td>
+<td>
+Commit analysis.
+</td>
+</tr>
+</tbody>
+</table>
+</div>
 <hr>
 </div>
 </div>
@@ -725,7 +797,9 @@ pheatmap::pheatmap(
 <p>Manually annotate the clusters using information from Valerie Wilson:</p>
 <pre class="r"><code>tbl &lt;- read.csv(here::here(&quot;data/cell_annotation.csv&quot;))
 
-sce$germ_layer &lt;- tbl$germ_layer[match(sce$Sample, tbl$cell_id)]</code></pre>
+sce$germ_layer &lt;- tbl$germ_layer[match(sce$Sample, tbl$cell_id)]
+
+sce$germ_layer &lt;- factor(sce$germ_layer, levels = c(&quot;ectoderm&quot;, &quot;ps_ectoderm&quot;, &quot;LPM&quot;, &quot;PXM&quot;))</code></pre>
 <p>Ectoderm, paraxial and lateral mesoderm and streak markers:</p>
 <pre class="r"><code>ids &lt;- c(&quot;Vim&quot;, &quot;Twist2&quot;, &quot;Twist1&quot;, &quot;Snai1&quot;, &quot;Runx1&quot;, &quot;Tal1&quot;, &quot;Etv2&quot;, &quot;Kdr&quot;, &quot;Hoxa11&quot;, &quot;Hoxa10&quot;, &quot;Aldh1a2&quot;, &quot;Pitx1&quot;, &quot;Foxf1&quot;, &quot;Hand1&quot;, &quot;Msgn1&quot;, &quot;Pcdh19&quot;, &quot;Tbx6&quot;, &quot;Dll3&quot;, &quot;Dll1&quot;, &quot;Cldn7&quot;, &quot;Tfap2c&quot;, &quot;Nkx1-2&quot;, &quot;Cdh1&quot;, &quot;Epcam&quot;, &quot;Hoxa5&quot;, &quot;Hoxa9&quot;, &quot;Hoxa7&quot;, &quot;Sox2&quot;, &quot;Eomes&quot;, &quot;Nanog&quot;, &quot;Sp6&quot;, &quot;Wnt8a&quot;, &quot;Wnt3a&quot;, &quot;Fgf10&quot;, &quot;Fgf8&quot;)</code></pre>
 <p>Plot scaled expression values of markers:</p>
@@ -770,6 +844,43 @@ pheatmap::pheatmap(
   show_colnames = FALSE
 )</code></pre>
 <p><img src="figure/01-analysis.Rmd/unnamed-chunk-9-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-9-1">
+Past versions of unnamed-chunk-9-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-9-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/jma1991/LHF/blob/4498865828557499c89fda94d4b8955fafc9e6f4/docs/figure/01-analysis.Rmd/unnamed-chunk-9-1.png" target="_blank">4498865</a>
+</td>
+<td>
+James Ashmore
+</td>
+<td>
+2020-02-12
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="summary" class="section level2">
 <h2>Summary</h2>
