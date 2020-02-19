@@ -87,7 +87,7 @@ pheatmap::pheatmap(
   cluster_cols = FALSE, 
   annotation_row = ann$row, 
   annotation_col = ann$col,
-  show_colnames = TRUE
+  show_colnames = FALSE
 )
 ```
 
